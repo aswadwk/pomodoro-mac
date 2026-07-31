@@ -1,0 +1,31 @@
+name: Focus
+options:
+  bundleIdPrefix: com.aswad
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+targets:
+  Focus:
+    type: application
+    platform: macOS
+    sources:
+      - Focus
+    info:
+      path: Focus/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: Focus
+        LSApplicationCategoryType: public.app-category.productivity
+        LSUIElement: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aswad.Focus
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: 1
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+    scheme:
+      gatherCoverageData: false
