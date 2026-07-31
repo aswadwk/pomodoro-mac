@@ -64,6 +64,19 @@ final class SettingsStore {
         launchAtLogin = SMAppService.mainApp.status == .enabled
     }
 
+    func resetToDefaults() {
+        focusMinutes = 25
+        shortBreakMinutes = 5
+        longBreakMinutes = 15
+        sessionsBeforeLongBreak = 4
+        autoStartBreaks = false
+        autoStartFocus = false
+        playSound = true
+        sendNotifications = true
+        pauseWhenIdle = false
+        launchAtLogin = false
+    }
+
     var focusDuration: TimeInterval {
         TimeInterval(focusMinutes * 60)
     }
