@@ -36,12 +36,19 @@ release: generate
 	$(XCODEBUILD) -configuration Release build
 
 dmg: release
-	rm -rf $(DMG_STAGING)
+	rm -rf $(DMG_STAGING) "$(DMG_PATH)"
 	mkdir -p $(DMG_STAGING)
 	cp -R "$(RELEASE_APP)" $(DMG_STAGING)/
-	ln -s /Applications $(DMG_STAGING)/Applications
-	mkdir -p dist
-	hdiutil create -volname "$(APP_NAME)" -srcfolder $(DMG_STAGING) -ov -format UDZO "$(DMG_PATH)"
+	create-dmg \
+		--volname "$(APP_NAME)" \
+		--background design/dmg-background.png \
+		--window-size 660 400 \
+		--icon-size 128 \
+		--icon "$(APP_NAME).app" 190 230 \
+		--app-drop-link 470 230 \
+		--no-internet-enable \
+		--format UDZO \
+		"$(DMG_PATH)" $(DMG_STAGING)
 	rm -rf $(DMG_STAGING)
 
 clean:
