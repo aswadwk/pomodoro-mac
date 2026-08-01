@@ -130,12 +130,7 @@ final class TimerService {
         recordCurrentPhase()
         NotificationService.removePending()
         if settings.playSound {
-            switch phase {
-            case .focus:
-                SoundService.playBreakTime()
-            case .shortBreak, .longBreak:
-                SoundService.playFocusTime()
-            }
+            SoundService.play(settings.soundName)
         }
         if settings.sendNotifications {
             switch phase {

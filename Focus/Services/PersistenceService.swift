@@ -9,6 +9,7 @@ enum PersistenceKey: String {
     case autoStartBreaks = "settings.autoStartBreaks"
     case autoStartFocus = "settings.autoStartFocus"
     case playSound = "settings.playSound"
+    case soundName = "settings.soundName"
     case sendNotifications = "settings.sendNotifications"
     case pauseWhenIdle = "settings.pauseWhenIdle"
 }

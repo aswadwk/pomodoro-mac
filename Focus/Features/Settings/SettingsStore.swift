@@ -5,6 +5,7 @@ import ServiceManagement
 @MainActor
 @Observable
 final class SettingsStore {
+    static let defaultSoundName = "Ringtone"
     var focusMinutes: Int {
         didSet { persistence.save(focusMinutes, for: .focusMinutes) }
     }
@@ -33,6 +34,10 @@ final class SettingsStore {
         didSet { persistence.save(playSound, for: .playSound) }
     }
 
+    var soundName: String {
+        didSet { persistence.save(soundName, for: .soundName) }
+    }
+
     var sendNotifications: Bool {
         didSet { persistence.save(sendNotifications, for: .sendNotifications) }
     }
@@ -59,6 +64,7 @@ final class SettingsStore {
         autoStartBreaks = persistence.load(.autoStartBreaks, default: false)
         autoStartFocus = persistence.load(.autoStartFocus, default: false)
         playSound = persistence.load(.playSound, default: true)
+        soundName = persistence.load(.soundName, default: Self.defaultSoundName)
         sendNotifications = persistence.load(.sendNotifications, default: true)
         pauseWhenIdle = persistence.load(.pauseWhenIdle, default: false)
         launchAtLogin = SMAppService.mainApp.status == .enabled
@@ -72,6 +78,7 @@ final class SettingsStore {
         autoStartBreaks = false
         autoStartFocus = false
         playSound = true
+        soundName = Self.defaultSoundName
         sendNotifications = true
         pauseWhenIdle = false
         launchAtLogin = false

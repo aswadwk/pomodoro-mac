@@ -88,6 +88,14 @@ struct SettingsView: View {
                         tint: .pink,
                         isOn: $settings.playSound
                     )
+                    SettingSoundRow(
+                        title: "Sound",
+                        caption: "Sound used for the chime",
+                        icon: "music.note",
+                        tint: .pink,
+                        selection: $settings.soundName,
+                        sounds: SoundService.availableSounds
+                    )
                     SettingToggleRow(
                         title: "Send notifications",
                         caption: "Alerts from the notification center",
@@ -216,6 +224,50 @@ struct SettingValueRow: View {
             value = parsed
         }
         isEditing = false
+    }
+}
+
+struct SettingSoundRow: View {
+    let title: String
+    let caption: String
+    let icon: String
+    let tint: Color
+    @Binding var selection: String
+    let sounds: [String]
+
+    var body: some View {
+        HStack(spacing: 10) {
+            IconBadge(systemName: icon, tint: tint)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                Text(caption)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Button {
+                SoundService.play(selection)
+            } label: {
+                Image(systemName: "play.fill")
+                    .font(.system(size: 10, weight: .semibold))
+                    .frame(width: 24, height: 22)
+            }
+            .buttonStyle(.borderless)
+            .disabled(sounds.isEmpty)
+            .help("Preview sound")
+
+            Picker("", selection: $selection) {
+                ForEach(sounds, id: \.self) { name in
+                    Text(name).tag(name)
+                }
+            }
+            .labelsHidden()
+            .frame(width: 120)
+        }
+        .padding(.vertical, 2)
     }
 }
 
