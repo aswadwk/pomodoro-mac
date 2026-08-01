@@ -24,10 +24,16 @@ final class TimerService {
         case paused
     }
 
+    enum PhaseAlert {
+        case focusFinished
+        case breakFinished
+    }
+
     var phase: Phase = .focus
     var state: State = .idle
     private(set) var secondsRemaining: TimeInterval
     private(set) var completedFocusSessions = 0
+    var phaseAlert: PhaseAlert?
 
     private let settings: SettingsStore
     private let persistence: PersistenceService
@@ -83,11 +89,6 @@ final class TimerService {
         }
     }
 
-    func skip() {
-        NotificationService.removePending()
-        advancePhase(startAutomatically: false)
-    }
-
     private func beginPhase() {
         secondsRemaining = totalDuration
         state = .running
@@ -104,7 +105,7 @@ final class TimerService {
     }
 
     private func tick() {
-        if settings.pauseWhenIdle, phase == .focus {
+        if settings.pauseWhenIdle, phase == .focus, state != .idle {
             let idle = IdleDetectionService.secondsSinceLastInput()
             if state == .running, idle > Self.idlePauseThreshold {
                 autoPaused = true
@@ -141,7 +142,27 @@ final class TimerService {
                 NotificationService.scheduleFocusReminder()
             }
         }
-        advancePhase(startAutomatically: shouldAutoStartNextPhase())
+        state = .idle
+        if shouldAutoStartNextPhase() {
+            startNextPhase()
+        } else {
+            phaseAlert = phase == .focus ? .focusFinished : .breakFinished
+        }
+    }
+
+    private func shouldAutoStartNextPhase() -> Bool {
+        phase == .focus ? settings.autoStartBreaks : settings.autoStartFocus
+    }
+
+    func startNextPhase() {
+        phaseAlert = nil
+        advancePhase(startAutomatically: true)
+    }
+
+    func skipPhase() {
+        NotificationService.removePending()
+        phaseAlert = nil
+        advancePhase(startAutomatically: false)
     }
 
     private func advancePhase(startAutomatically: Bool) {
@@ -156,10 +177,6 @@ final class TimerService {
         }
         secondsRemaining = totalDuration
         state = startAutomatically ? .running : .idle
-    }
-
-    private func shouldAutoStartNextPhase() -> Bool {
-        phase == .focus ? settings.autoStartBreaks : settings.autoStartFocus
     }
 
     private func recordCurrentPhase() {
@@ -200,10 +217,10 @@ final class TimerService {
     }
 
     @objc private func handleStartBreakAction(_ note: Notification) {
-        advancePhase(startAutomatically: true)
+        startNextPhase()
     }
 
     @objc private func handleSkipAction(_ note: Notification) {
-        advancePhase(startAutomatically: false)
+        skipPhase()
     }
 }

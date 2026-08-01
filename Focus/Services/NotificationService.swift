@@ -4,6 +4,13 @@ import UserNotifications
 enum NotificationAction: String {
     case startBreak = "start-break"
     case skip = "skip"
+
+    var title: String {
+        switch self {
+        case .startBreak: "Start Break"
+        case .skip: "Skip"
+        }
+    }
 }
 
 extension Notification.Name {
@@ -22,12 +29,12 @@ enum NotificationService {
     static func registerCategories() {
         let start = UNNotificationAction(
             identifier: NotificationAction.startBreak.rawValue,
-            title: "Start Break",
+            title: NotificationAction.startBreak.title,
             options: .foreground
         )
         let skip = UNNotificationAction(
             identifier: NotificationAction.skip.rawValue,
-            title: "Skip",
+            title: NotificationAction.skip.title,
             options: []
         )
         let category = UNNotificationCategory(

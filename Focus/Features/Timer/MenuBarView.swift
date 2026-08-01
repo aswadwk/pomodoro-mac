@@ -30,14 +30,16 @@ struct MenuBarView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .keyboardShortcut(.space)
+                .disabled(timer.phaseAlert != nil)
 
                 Button {
-                    timer.skip()
+                    timer.skipPhase()
                 } label: {
-                    Label("Skip", systemImage: "forward.fill")
+                    Label(NotificationAction.skip.title, systemImage: "forward.fill")
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.large)
+                .disabled(timer.phaseAlert != nil)
             }
 
             if settings.pauseWhenIdle, !timer.isBreakPhase {

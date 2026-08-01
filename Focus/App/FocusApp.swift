@@ -6,6 +6,7 @@ struct FocusApp: App {
     @State private var settings: SettingsStore
     @State private var timer: TimerService
     @State private var statistics: StatisticsService
+    private let phaseAlertWindow: PhaseAlertWindow
 
     init() {
         let persistence = PersistenceService()
@@ -15,6 +16,7 @@ struct FocusApp: App {
         _settings = State(initialValue: settings)
         _timer = State(initialValue: timer)
         _statistics = State(initialValue: statistics)
+        phaseAlertWindow = PhaseAlertWindow(timer: timer)
     }
 
     var body: some Scene {
