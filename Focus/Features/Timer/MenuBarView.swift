@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct MenuBarView: View {
@@ -53,11 +54,11 @@ struct MenuBarView: View {
                 .padding(.vertical, 8)
 
             MenuItemRow(title: "Statistics", icon: "chart.bar") {
-                openWindow(id: "statistics")
+                openFocusWindow(id: "statistics")
             }
 
             MenuItemRow(title: "Settings", icon: "gearshape") {
-                openWindow(id: "settings")
+                openFocusWindow(id: "settings")
             }
 
             Divider()
@@ -69,6 +70,11 @@ struct MenuBarView: View {
         }
         .padding(12)
         .frame(width: 280)
+    }
+
+    private func openFocusWindow(id: String) {
+        NSApp.activate(ignoringOtherApps: true)
+        openWindow(id: id)
     }
 
     private var primaryButtonTitle: String {
