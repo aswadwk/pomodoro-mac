@@ -1,5 +1,4 @@
 import AppKit
-import Observation
 import SwiftUI
 
 @MainActor
@@ -9,18 +8,8 @@ final class PhaseAlertWindow {
 
     init(timer: TimerService) {
         self.timer = timer
-        observe()
-    }
-
-    private func observe() {
-        withObservationTracking {
-            _ = timer.phaseAlert
-        } onChange: { [weak self] in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                sync()
-                observe()
-            }
+        timer.phaseAlertChanged = { [weak self] in
+            self?.sync()
         }
     }
 
@@ -67,7 +56,7 @@ final class PhaseAlertWindow {
         let frame = screen.visibleFrame
         panel.setFrameOrigin(NSPoint(
             x: frame.midX - panel.frame.width / 2,
-            y: frame.maxY - panel.frame.height - 24
+            y: frame.midY - panel.frame.height / 2
         ))
     }
 
@@ -83,41 +72,54 @@ struct PhaseAlertOverlay: View {
     let timer: TimerService
 
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: copy.icon)
-                .font(.system(size: 36))
-                .foregroundStyle(.yellow)
+        VStack(spacing: 20) {
+            ZStack {
+                Circle()
+                    .fill(copy.accent.opacity(0.14))
+                    .frame(width: 68, height: 68)
+                Image(systemName: copy.icon)
+                    .font(.system(size: 30, weight: .semibold))
+                    .foregroundStyle(copy.accent)
+            }
 
-            Text(copy.title)
-                .font(.headline)
+            VStack(spacing: 5) {
+                Text(copy.title)
+                    .font(.system(size: 20, weight: .bold))
+                Text(copy.subtitle)
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
-            Text(copy.subtitle)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            Divider()
+                .padding(.horizontal, 4)
 
             VStack(spacing: 8) {
                 Button {
                     timer.startNextPhase()
                 } label: {
                     Label(copy.startLabel, systemImage: copy.startIcon)
+                        .font(.system(size: 14, weight: .semibold))
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(copy.accent)
                 .controlSize(.large)
 
                 Button {
                     timer.skipPhase()
                 } label: {
                     Label(NotificationAction.skip.title, systemImage: "forward.fill")
+                        .font(.system(size: 14))
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
-                .controlSize(.regular)
+                .controlSize(.large)
             }
         }
         .padding(24)
-        .frame(width: 320)
+        .frame(width: 340)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
@@ -125,12 +127,26 @@ struct PhaseAlertOverlay: View {
         }
     }
 
-    private var copy: (icon: String, title: String, subtitle: String, startLabel: String, startIcon: String) {
+    private var copy: (icon: String, accent: Color, title: String, subtitle: String, startLabel: String, startIcon: String) {
         switch alert {
         case .focusFinished:
-            ("checkmark.circle.fill", "Focus Complete!", "Great work. Time to recharge.", NotificationAction.startBreak.title, "cup.and.saucer.fill")
+            (
+                "checkmark.circle.fill",
+                Color(red: 0.92, green: 0.30, blue: 0.25),
+                "Focus Complete",
+                "Great work — time to recharge.",
+                NotificationAction.startBreak.title,
+                "cup.and.saucer.fill"
+            )
         case .breakFinished:
-            ("bell.fill", "Break Over!", "Ready to get back to it?", "Start Focus", "brain.head.profile.fill")
+            (
+                "bell.fill",
+                Color(red: 0.16, green: 0.64, blue: 0.45),
+                "Break Over",
+                "Ready for the next focus session?",
+                "Start Focus",
+                "brain.head.profile.fill"
+            )
         }
     }
 }

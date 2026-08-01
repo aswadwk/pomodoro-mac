@@ -33,7 +33,10 @@ final class TimerService {
     var state: State = .idle
     private(set) var secondsRemaining: TimeInterval
     private(set) var completedFocusSessions = 0
-    var phaseAlert: PhaseAlert?
+    var phaseAlert: PhaseAlert? {
+        didSet { phaseAlertChanged?() }
+    }
+    var phaseAlertChanged: (() -> Void)?
 
     private let settings: SettingsStore
     private let persistence: PersistenceService
