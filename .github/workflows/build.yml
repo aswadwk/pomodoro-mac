@@ -1,0 +1,79 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  build:
+    name: Build & upload artifact
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Build (Release)
+        run: make release
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          # Unique name per run: upload-artifact v4 does not merge artifacts on
+          # re-upload, so a per-run suffix avoids collisions between re-runs.
+          name: app-build-${{ github.run_id }}
+          path: .build/DerivedData/Build/Products/Release/Focus.app
+          if-no-files-found: error
+          retention-days: 30
+
+  cleanup:
+    name: Clean up old artifacts (keep last 5)
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete oldest artifacts, keep 5 latest
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pattern = /^app-build-/;
+            const keep = 5;
+
+            let page = 1;
+            let artifacts = [];
+            while (true) {
+              const { data } = await github.rest.actions.listArtifactsForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 100,
+                page,
+              });
+              artifacts = artifacts.concat(data.artifacts);
+              if (data.artifacts.length < 100) break;
+              page += 1;
+            }
+
+            const candidates = artifacts
+              .filter((a) => pattern.test(a.name))
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            console.log(
+              `${candidates.length} artifact(s) match "app-build-*", keeping the ${keep} most recent`
+            );
+
+            for (const artifact of candidates.slice(keep)) {
+              await github.rest.actions.deleteArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id,
+              });
+              console.log(`Deleted ${artifact.name} (created ${artifact.created_at})`);
+            }
