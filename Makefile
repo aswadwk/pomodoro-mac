@@ -50,11 +50,11 @@ dmg: release
 	cp -R "$(RELEASE_APP)" $(DMG_STAGING)/
 	create-dmg \
 		--volname "$(APP_NAME)" \
-		--background design/dmg-background.png \
-		--window-size 660 400 \
+		--window-pos 200 120 \
+		--window-size 540 380 \
 		--icon-size 120 \
-		--icon "$(APP_NAME).app" 175 196 \
-		--app-drop-link 485 196 \
+		--icon "$(APP_NAME).app" 150 180 \
+		--app-drop-link 390 180 \
 		--no-internet-enable \
 		--format UDZO \
 		"$(DMG_PATH)" $(DMG_STAGING)
