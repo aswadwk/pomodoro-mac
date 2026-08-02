@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   actions: write
 
 jobs:
@@ -16,23 +16,57 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install XcodeGen
-        run: brew install xcodegen
+        run: |
+          brew untap aws/tap 2>/dev/null || true
+          brew install xcodegen
 
       - name: Build (Release)
         run: make release
 
+      - name: Create DMG
+        run: |
+          hdiutil create \
+            -volname Focus \
+            -srcfolder .build/DerivedData/Build/Products/Release/Focus.app \
+            -ov -format UDZO \
+            Focus.dmg
+
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           # Unique name per run: upload-artifact v4 does not merge artifacts on
           # re-upload, so a per-run suffix avoids collisions between re-runs.
           name: app-build-${{ github.run_id }}
-          path: .build/DerivedData/Build/Products/Release/Focus.app
+          path: |
+            .build/DerivedData/Build/Products/Release/Focus.app
+            Focus.dmg
           if-no-files-found: error
           retention-days: 30
+
+  release:
+    name: Publish DMG to GitHub Releases
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build
+        uses: actions/download-artifact@v8
+        with:
+          name: app-build-${{ github.run_id }}
+          path: dist
+
+      - name: Publish rolling "latest" release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag || true
+          gh release create latest --repo "$GITHUB_REPOSITORY" dist/Focus.dmg \
+            --title "Focus build ${{ github.run_id }}" \
+            --notes "Build otomatis dari branch main (commit ${{ github.sha }}). Unduh Focus.dmg, buka filenya, lalu tarik Focus.app ke folder Applications. Jika Gatekeeper memblokir (app tidak dinotasikan): klik kanan -> Open." \
+            --target "${{ github.sha }}"
 
   cleanup:
     name: Clean up old artifacts (keep last 5)
@@ -41,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Delete oldest artifacts, keep 5 latest
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const pattern = /^app-build-/;
