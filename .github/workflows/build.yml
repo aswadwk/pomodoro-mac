@@ -16,7 +16,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Install XcodeGen
         run: |
@@ -35,7 +35,7 @@ jobs:
             Focus.dmg
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           # Unique name per run: upload-artifact v4 does not merge artifacts on
           # re-upload, so a per-run suffix avoids collisions between re-runs.
@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download build
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: app-build-${{ github.run_id }}
           path: dist
@@ -75,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Delete oldest artifacts, keep 5 latest
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           script: |
             const pattern = /^app-build-/;

@@ -37,6 +37,23 @@ Test deterministik: jam & kalender di-inject (`now`, `calendar`, `idleTime`), ti
 
 Catatan: `FocusTests`/`FocusFeatureTests` memakai test host `Focus.app`; saat test berjalan, suara/notifikasi/idle detection di-disable lewat settings test agar tidak ada efek samping.
 
+## GitHub Actions
+
+Semua workflow di `.github/workflows/` memakai action resmi dari `actions/*` yang di-pin ke **versi patch penuh** (misal `actions/checkout@v7.0.1`), bukan branch (`@main`/`@master`) atau tag ambigu — untuk reproducibilitas maksimal antar run.
+
+| Action | Versi ter-pin |
+| --- | --- |
+| `actions/checkout` | `v7.0.1` |
+| `actions/upload-artifact` | `v7.0.1` |
+| `actions/download-artifact` | `v8.0.1` |
+| `actions/github-script` | `v9.0.0` |
+
+**Proses pembaruan rutin:** cek halaman Releases tiap action (misal `https://github.com/actions/checkout/releases`) untuk versi terbaru, lalu:
+
+1. Bump pin di `ci.yml` / `build.yml` ke versi patch terbaru (misal `v7.0.1` → `v7.0.2`).
+2. Jalankan workflow (push ke branch PR) dan pastikan semua job hijau.
+3. Baca release notes sebelum menaikkan versi mayor — API action bisa berubah antar mayor.
+
 ## Penggunaan
 
 App berjalan di menu bar kanan atas (ikon ⏱ + waktu tersisa). Klik untuk membuka popover:
