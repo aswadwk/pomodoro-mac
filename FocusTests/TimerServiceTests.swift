@@ -148,6 +148,8 @@ final class TimerServiceTests: XCTestCase {
 
     func testCompletingPhaseTwiceRecordsTwoSessions() {
         settings.focusMinutes = 1
+        settings.shortBreakMinutes = 1
+        settings.autoStartFocus = false
         timer = makeTimer()
         timer.start()
         completePhase(60)
