@@ -30,3 +30,40 @@ targets:
         CODE_SIGN_IDENTITY: "-"
     scheme:
       gatherCoverageData: false
+      testTargets:
+        - FocusTests
+        - FocusFeatureTests
+  FocusTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - FocusTests
+      - TestSupport
+    dependencies:
+      - target: Focus
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aswad.FocusTests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Focus.app/Contents/MacOS/Focus
+        BUNDLE_LOADER: $(TEST_HOST)
+  FocusFeatureTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - FocusFeatureTests
+      - TestSupport
+    dependencies:
+      - target: Focus
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aswad.FocusFeatureTests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Focus.app/Contents/MacOS/Focus
+        BUNDLE_LOADER: $(TEST_HOST)
