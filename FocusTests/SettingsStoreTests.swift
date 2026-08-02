@@ -6,16 +6,14 @@ final class SettingsStoreTests: XCTestCase {
     private var defaults: UserDefaults!
     private var persistence: PersistenceService!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
         defaults = TestSupport.makeIsolatedDefaults()
         persistence = PersistenceService(defaults: defaults)
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         persistence = nil
         defaults = nil
-        super.tearDown()
     }
 
     private func makeStore() -> SettingsStore {

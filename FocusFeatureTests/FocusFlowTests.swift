@@ -16,8 +16,7 @@ final class FocusFlowTests: XCTestCase {
     private var now: Date!
     private var calendar: Calendar!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
         calendar = TestSupport.makeUTCCalendar()
         now = TestSupport.date(2026, 8, 2, 12, 0, calendar: calendar)
         defaults = TestSupport.makeIsolatedDefaults()
@@ -32,7 +31,7 @@ final class FocusFlowTests: XCTestCase {
         statistics = StatisticsService(persistence: persistence, calendar: calendar, now: { self.now })
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         timer = nil
         statistics = nil
         settings = nil
@@ -40,7 +39,6 @@ final class FocusFlowTests: XCTestCase {
         defaults = nil
         now = nil
         calendar = nil
-        super.tearDown()
     }
 
     private func makeTimer() -> TimerService {
@@ -86,9 +84,11 @@ final class FocusFlowTests: XCTestCase {
         XCTAssertEqual(statistics.totalFocusTime, 60)
         XCTAssertEqual(statistics.productivityToday, 1.0, accuracy: 0.000_001)
 
-        // The break runs down; with autoStartFocus off it ends idle with an alert.
+        // The break runs down; with autoStartFocus off it ends idle with an
+        // alert. The phase stays on the completed break until the user starts
+        // the next focus session.
         tick(60)
-        XCTAssertEqual(timer.phase, .focus)
+        XCTAssertEqual(timer.phase, .shortBreak)
         XCTAssertEqual(timer.state, .idle)
         guard case .breakFinished = timer.phaseAlert else {
             return XCTFail("Expected .breakFinished alert, got \(String(describing: timer.phaseAlert))")

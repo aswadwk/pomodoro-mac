@@ -65,11 +65,11 @@ final class StatisticsService {
     }
 
     private var weekEnd: Date {
-        calendar.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
+        calendar.date(byAdding: .day, value: 7, to: weekStart) ?? weekStart
     }
 
     private var sessionsThisWeek: [PomodoroSession] {
-        sessions.filter { $0.date >= weekStart && $0.date <= weekEnd }
+        sessions.filter { $0.date >= weekStart && $0.date < weekEnd }
     }
 
     var focusSessionsThisWeek: [PomodoroSession] {
