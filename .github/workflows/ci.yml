@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate project
+        run: xcodegen generate
+
+      - name: Unit tests
+        run: xcodebuild -project Focus.xcodeproj -scheme Focus -destination 'platform=macOS' -derivedDataPath .build/DerivedData test -only-testing:FocusTests
+
+      - name: Feature tests
+        run: xcodebuild -project Focus.xcodeproj -scheme Focus -destination 'platform=macOS' -derivedDataPath .build/DerivedData test -only-testing:FocusFeatureTests
+
+      - name: Release build
+        run: xcodebuild -project Focus.xcodeproj -scheme Focus -destination 'platform=macOS' -derivedDataPath .build/DerivedData -configuration Release build

@@ -13,10 +13,17 @@ final class StatisticsService {
 
     private(set) var sessions: [PomodoroSession]
     private let persistence: PersistenceService
-    private let calendar = Calendar.current
+    private let calendar: Calendar
+    private let now: () -> Date
 
-    init(persistence: PersistenceService) {
+    init(
+        persistence: PersistenceService,
+        calendar: Calendar = .current,
+        now: @escaping () -> Date = { Date() }
+    ) {
         self.persistence = persistence
+        self.calendar = calendar
+        self.now = now
         sessions = persistence.loadSessions()
     }
 
@@ -27,11 +34,11 @@ final class StatisticsService {
     // MARK: - Today
 
     var focusSessionsToday: [PomodoroSession] {
-        sessions.filter { $0.kind == .focus && calendar.isDateInToday($0.date) }
+        sessions.filter { $0.kind == .focus && calendar.isDate($0.date, inSameDayAs: now()) }
     }
 
     var breakSessionsToday: [PomodoroSession] {
-        sessions.filter { $0.kind != .focus && calendar.isDateInToday($0.date) }
+        sessions.filter { $0.kind != .focus && calendar.isDate($0.date, inSameDayAs: now()) }
     }
 
     var focusTimeToday: TimeInterval {
@@ -51,7 +58,7 @@ final class StatisticsService {
     // MARK: - This week
 
     private var weekStart: Date {
-        let today = calendar.startOfDay(for: Date())
+        let today = calendar.startOfDay(for: now())
         let weekday = calendar.component(.weekday, from: today)
         let daysFromMonday = (weekday - 2 + 7) % 7
         return calendar.date(byAdding: .day, value: -daysFromMonday, to: today) ?? today
@@ -78,13 +85,13 @@ final class StatisticsService {
     }
 
     var averageFocusPerDayThisWeek: TimeInterval {
-        let daysElapsed = max(1, calendar.dateComponents([.day], from: weekStart, to: Date()).day ?? 1)
+        let daysElapsed = max(1, calendar.dateComponents([.day], from: weekStart, to: now()).day ?? 1)
         return focusTimeThisWeek / TimeInterval(daysElapsed)
     }
 
     var currentStreak: Int {
         let focusDays = Set(sessions.filter { $0.kind == .focus }.map { calendar.startOfDay(for: $0.date) })
-        var day = calendar.startOfDay(for: Date())
+        var day = calendar.startOfDay(for: now())
         if !focusDays.contains(day) {
             guard let yesterday = calendar.date(byAdding: .day, value: -1, to: day) else { return 0 }
             guard focusDays.contains(yesterday) else { return 0 }

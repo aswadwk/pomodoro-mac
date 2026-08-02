@@ -20,6 +20,23 @@ make clean   # hapus build artifacts + project
 
 `.xcodeproj` di-generate oleh XcodeGen dari `project.yml` dan tidak di-commit.
 
+## Testing
+
+Stack test: XCTest (tanpa dependency pihak ketiga), dua target test yang didefinisikan di `project.yml`:
+
+- **`FocusTests`** (unit test) — logika bisnis inti: state machine `TimerService`, agregasi `StatisticsService`, default & persistensi `SettingsStore`, dan `PersistenceService` (round-trip, fallback data korup, isolasi suite).
+- **`FocusFeatureTests`** (feature test) — alur end-to-end dari perspektif pengguna, dijalankan lewat service asli: start focus → countdown → phase selesai → sesi terekam → statistik ter-update → transisi break, plus alur skip, pause/resume, long break, dan "app relaunch".
+
+```bash
+make test          # generate project + jalankan semua test (FocusTests + FocusFeatureTests)
+make test-unit     # hanya unit test
+make test-feature  # hanya feature test
+```
+
+Test deterministik: jam & kalender di-inject (`now`, `calendar`, `idleTime`), tiap test memakai `UserDefaults` suite terisolasi, dan tick timer (biasanya 1 detik) di-disable (`startsTicking: false`) lalu di-drive manual. Berjalan di CI via GitHub Actions (`.github/workflows/ci.yml`, runner macOS).
+
+Catatan: `FocusTests`/`FocusFeatureTests` memakai test host `Focus.app`; saat test berjalan, suara/notifikasi/idle detection di-disable lewat settings test agar tidak ada efek samping.
+
 ## Penggunaan
 
 App berjalan di menu bar kanan atas (ikon ⏱ + waktu tersisa). Klik untuk membuka popover:

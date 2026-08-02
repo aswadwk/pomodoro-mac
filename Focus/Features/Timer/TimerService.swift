@@ -40,14 +40,26 @@ final class TimerService {
 
     private let settings: SettingsStore
     private let persistence: PersistenceService
+    private let startsTicking: Bool
+    private let idleTime: () -> TimeInterval
+    private let now: () -> Date
     private var tickTask: Task<Void, Never>?
     private var autoPaused = false
 
     private static let idlePauseThreshold: TimeInterval = 60
 
-    init(settings: SettingsStore, persistence: PersistenceService) {
+    init(
+        settings: SettingsStore,
+        persistence: PersistenceService,
+        startsTicking: Bool = true,
+        idleTime: @escaping () -> TimeInterval = { IdleDetectionService.secondsSinceLastInput() },
+        now: @escaping () -> Date = { Date() }
+    ) {
         self.settings = settings
         self.persistence = persistence
+        self.startsTicking = startsTicking
+        self.idleTime = idleTime
+        self.now = now
         secondsRemaining = settings.focusDuration
         observeNotificationActions()
         startTicking()
@@ -107,9 +119,9 @@ final class TimerService {
         state = .running
     }
 
-    private func tick() {
+    func tick() {
         if settings.pauseWhenIdle, phase == .focus, state != .idle {
-            let idle = IdleDetectionService.secondsSinceLastInput()
+            let idle = idleTime()
             if state == .running, idle > Self.idlePauseThreshold {
                 autoPaused = true
                 state = .paused
@@ -184,12 +196,13 @@ final class TimerService {
         case .shortBreak: kind = .shortBreak
         case .longBreak: kind = .longBreak
         }
-        let session = PomodoroSession(kind: kind, date: Date(), duration: totalDuration)
+        let session = PomodoroSession(kind: kind, date: now(), duration: totalDuration)
         persistence.saveSessions(persistence.loadSessions() + [session])
         NotificationCenter.default.post(name: .focusSessionCompleted, object: nil)
     }
 
     private func startTicking() {
+        guard startsTicking else { return }
         tickTask = Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(1))

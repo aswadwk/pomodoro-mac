@@ -8,7 +8,7 @@ DMG_PATH := dist/$(APP_NAME)-$(MARKETING_VERSION).dmg
 DMG_STAGING := .build/dmg-staging
 XCODEBUILD := xcodebuild -project $(PROJECT) -scheme $(APP_NAME) -destination 'platform=macOS' -derivedDataPath $(DERIVED_DATA)
 
-.PHONY: all generate build run open dev close kill clean release dmg
+.PHONY: all generate build run open dev close kill clean release dmg test test-unit test-feature
 
 all: build
 
@@ -34,6 +34,15 @@ kill: close
 
 release: generate
 	$(XCODEBUILD) -configuration Release build
+
+test: generate
+	$(XCODEBUILD) test
+
+test-unit: generate
+	$(XCODEBUILD) test -only-testing:FocusTests
+
+test-feature: generate
+	$(XCODEBUILD) test -only-testing:FocusFeatureTests
 
 dmg: release
 	rm -rf $(DMG_STAGING) "$(DMG_PATH)"
