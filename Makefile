@@ -52,9 +52,9 @@ dmg: release
 		--volname "$(APP_NAME)" \
 		--background design/dmg-background.png \
 		--window-size 660 400 \
-		--icon-size 118 \
-		--icon "$(APP_NAME).app" 175 205 \
-		--app-drop-link 485 205 \
+		--icon-size 120 \
+		--icon "$(APP_NAME).app" 175 196 \
+		--app-drop-link 485 196 \
 		--no-internet-enable \
 		--format UDZO \
 		"$(DMG_PATH)" $(DMG_STAGING)
