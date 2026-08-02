@@ -84,7 +84,7 @@ final class TimerService {
 
     var remainingLabel: String {
         let seconds = max(0, Int(secondsRemaining.rounded(.up)))
-        return Duration.seconds(seconds).formatted(.time(pattern: .minuteSecond))
+        return String(format: "%02d:%02d", seconds / 60, seconds % 60)
     }
 
     var isRunning: Bool { state == .running }
@@ -93,7 +93,11 @@ final class TimerService {
 
     func start() {
         guard state == .idle else { return }
-        beginPhase()
+        if phaseAlert != nil {
+            startNextPhase()
+        } else {
+            beginPhase()
+        }
     }
 
     func togglePause() {

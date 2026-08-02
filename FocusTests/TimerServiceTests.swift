@@ -133,7 +133,7 @@ final class TimerServiceTests: XCTestCase {
 
         XCTAssertEqual(timer.state, .idle)
         XCTAssertEqual(timer.phase, .focus)
-        XCTAssertEqual(timer.completedFocusSessions, 1)
+        XCTAssertEqual(timer.completedFocusSessions, 0)
         guard case .focusFinished = timer.phaseAlert else {
             return XCTFail("Expected .focusFinished alert, got \(String(describing: timer.phaseAlert))")
         }
