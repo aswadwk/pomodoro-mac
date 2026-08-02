@@ -16,10 +16,12 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install XcodeGen
-        run: brew install xcodegen
+        run: |
+          brew untap aws/tap 2>/dev/null || true
+          brew install xcodegen
 
       - name: Build (Release)
         run: make release
@@ -33,7 +35,7 @@ jobs:
             Focus.dmg
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           # Unique name per run: upload-artifact v4 does not merge artifacts on
           # re-upload, so a per-run suffix avoids collisions between re-runs.
@@ -51,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: app-build-${{ github.run_id }}
           path: dist
@@ -73,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Delete oldest artifacts, keep 5 latest
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const pattern = /^app-build-/;
