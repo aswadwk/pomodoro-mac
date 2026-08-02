@@ -84,9 +84,11 @@ final class FocusFlowTests: XCTestCase {
         XCTAssertEqual(statistics.totalFocusTime, 60)
         XCTAssertEqual(statistics.productivityToday, 1.0, accuracy: 0.000_001)
 
-        // The break runs down; with autoStartFocus off it ends idle with an alert.
+        // The break runs down; with autoStartFocus off it ends idle with an
+        // alert. The phase stays on the completed break until the user starts
+        // the next focus session.
         tick(60)
-        XCTAssertEqual(timer.phase, .focus)
+        XCTAssertEqual(timer.phase, .shortBreak)
         XCTAssertEqual(timer.state, .idle)
         guard case .breakFinished = timer.phaseAlert else {
             return XCTFail("Expected .breakFinished alert, got \(String(describing: timer.phaseAlert))")
