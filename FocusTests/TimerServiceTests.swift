@@ -11,8 +11,7 @@ final class TimerServiceTests: XCTestCase {
     private var now: Date!
     private var completionNotified = false
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
         defaults = TestSupport.makeIsolatedDefaults()
         persistence = PersistenceService(defaults: defaults)
         settings = SettingsStore(persistence: persistence)
@@ -23,7 +22,7 @@ final class TimerServiceTests: XCTestCase {
         timer = makeTimer()
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         NotificationCenter.default.removeObserver(self)
         completionNotified = false
         timer = nil
@@ -31,7 +30,6 @@ final class TimerServiceTests: XCTestCase {
         persistence = nil
         defaults = nil
         now = nil
-        super.tearDown()
     }
 
     private func makeTimer(idleTime: @escaping () -> TimeInterval = { 0 }) -> TimerService {

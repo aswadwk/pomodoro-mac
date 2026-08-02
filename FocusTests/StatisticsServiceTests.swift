@@ -9,20 +9,18 @@ final class StatisticsServiceTests: XCTestCase {
     private var persistence: PersistenceService!
     private var statistics: StatisticsService!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
         calendar = TestSupport.makeUTCCalendar()
         now = TestSupport.date(2026, 8, 2, 12, 0, calendar: calendar)
         persistence = PersistenceService(defaults: TestSupport.makeIsolatedDefaults())
         statistics = makeStatistics()
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         statistics = nil
         persistence = nil
         now = nil
         calendar = nil
-        super.tearDown()
     }
 
     private func makeStatistics() -> StatisticsService {
