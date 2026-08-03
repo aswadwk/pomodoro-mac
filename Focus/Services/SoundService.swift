@@ -24,9 +24,15 @@ enum SoundService {
     private static var currentSound: NSSound?
 
     static func play(_ name: String) {
+        stop()
         guard let sound = NSSound(named: name) else { return }
         currentSound = sound
         sound.volume = 1.0
         sound.play()
+    }
+
+    static func stop() {
+        currentSound?.stop()
+        currentSound = nil
     }
 }

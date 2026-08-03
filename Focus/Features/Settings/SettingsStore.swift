@@ -66,7 +66,7 @@ final class SettingsStore {
         playSound = persistence.load(.playSound, default: true)
         soundName = persistence.load(.soundName, default: Self.defaultSoundName)
         sendNotifications = persistence.load(.sendNotifications, default: true)
-        pauseWhenIdle = persistence.load(.pauseWhenIdle, default: false)
+        pauseWhenIdle = persistence.load(.pauseWhenIdle, default: true)
         launchAtLogin = SMAppService.mainApp.status == .enabled
     }
 
@@ -80,7 +80,7 @@ final class SettingsStore {
         playSound = true
         soundName = Self.defaultSoundName
         sendNotifications = true
-        pauseWhenIdle = false
+        pauseWhenIdle = true
         launchAtLogin = false
     }
 
