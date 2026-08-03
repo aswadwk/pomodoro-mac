@@ -41,11 +41,22 @@ jobs:
 
       - name: Create DMG
         run: |
-          hdiutil create \
-            -volname Focus \
-            -srcfolder .build/DerivedData/Build/Products/Release/Focus.app \
-            -ov -format UDZO \
-            Focus.dmg
+          # Use create-dmg (not plain hdiutil) so the installer window shows the
+          # app icon next to an Applications shortcut for drag-to-install.
+          brew install create-dmg
+          STAGING="$(mktemp -d)"
+          cp -R .build/DerivedData/Build/Products/Release/Focus.app "$STAGING"/
+          rm -f Focus.dmg
+          create-dmg \
+            --volname Focus \
+            --window-pos 200 120 \
+            --window-size 540 380 \
+            --icon-size 120 \
+            --icon "Focus.app" 150 180 \
+            --app-drop-link 390 180 \
+            --no-internet-enable \
+            --format UDZO \
+            Focus.dmg "$STAGING"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v7.0.1

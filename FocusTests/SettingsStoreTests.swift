@@ -32,7 +32,7 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertTrue(store.playSound)
         XCTAssertEqual(store.soundName, SettingsStore.defaultSoundName)
         XCTAssertTrue(store.sendNotifications)
-        XCTAssertFalse(store.pauseWhenIdle)
+        XCTAssertTrue(store.pauseWhenIdle)
     }
 
     func testChangedValuesPersistAcrossInstances() {
@@ -104,7 +104,7 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertTrue(store.playSound)
         XCTAssertEqual(store.soundName, SettingsStore.defaultSoundName)
         XCTAssertTrue(store.sendNotifications)
-        XCTAssertFalse(store.pauseWhenIdle)
+        XCTAssertTrue(store.pauseWhenIdle)
     }
 
     func testResetToDefaultsIsPersisted() {
