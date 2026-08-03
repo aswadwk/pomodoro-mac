@@ -14,9 +14,22 @@ jobs:
   build:
     name: Build & upload artifact
     runs-on: macos-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
+
+      - name: Read app version
+        id: version
+        run: |
+          # Source of truth: MARKETING_VERSION in project.yml (e.g. 0.1.0).
+          VERSION="$(grep -m1 'MARKETING_VERSION' project.yml | sed -E 's/.*"([^"]+)".*/\1/')"
+          if [ -z "$VERSION" ]; then
+            echo "::error::MARKETING_VERSION not found in project.yml"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Install XcodeGen
         run: |
@@ -49,8 +62,13 @@ jobs:
   release:
     name: Publish DMG to GitHub Releases
     needs: build
-    if: github.event_name != 'pull_request'
+    # Only publish a release when code lands on main (merge/push to main).
+    # PRs and workflow_dispatch still build & test above, but never release.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.build.outputs.version }}
+      TAG: v${{ needs.build.outputs.version }}+${{ github.run_number }}
     steps:
       - name: Download build
         uses: actions/download-artifact@v8.0.1
@@ -58,23 +76,24 @@ jobs:
           name: app-build-${{ github.run_id }}
           path: dist
 
-      - name: Publish rolling "latest" release
+      - name: Publish versioned release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Notes = full commit message of the triggering commit (works for
-          # push and workflow_dispatch; no checkout needed in this job).
+          # Tag = semver from project.yml + build number, unique per merge
+          # (e.g. v0.1.0+42). GitHub auto-marks the newest as "latest", so
+          # releases/latest keeps pointing at the freshest build.
+          # Notes = full commit message of the merged commit (no checkout needed).
           COMMIT_MSG="$(gh api "repos/$GITHUB_REPOSITORY/commits/${{ github.sha }}" --jq '.commit.message')"
-          gh release delete latest --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag || true
-          gh release create latest --repo "$GITHUB_REPOSITORY" dist/Focus.dmg \
-            --title "Focus build ${{ github.run_id }}" \
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" dist/Focus.dmg \
+            --title "Focus v${VERSION} (build ${{ github.run_number }})" \
             --notes "$COMMIT_MSG" \
             --target "${{ github.sha }}"
 
   cleanup:
     name: Clean up old artifacts (keep last 5)
     needs: build
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Delete oldest artifacts, keep 5 latest
