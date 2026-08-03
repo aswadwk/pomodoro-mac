@@ -169,11 +169,13 @@ final class TimerService {
     }
 
     func startNextPhase() {
+        SoundService.stop()
         phaseAlert = nil
         advancePhase(startAutomatically: true)
     }
 
     func skipPhase() {
+        SoundService.stop()
         NotificationService.removePending()
         phaseAlert = nil
         advancePhase(startAutomatically: false)
